@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: MRS
+  datasource:
+    url: jdbc:mysql://localhost:3306/MRS?serverTimezone=UTC&useSSL=false #&allowPublicKeyRetrieval=true
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initialSize: 5
+      minIdle: 5
+      maxActive: 20
+      maxWait: 60000
+      #日期格式化
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+
+mybatis-plus:
+  mapper-locations: classpath:mappers/*.xml
+  type-aliases-package: com.wyy.mrs.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+# log
+logging:
+  level:
+    root: error
+    com.neuedu.hiss.mapper: debug # 显示执行的sql语句
