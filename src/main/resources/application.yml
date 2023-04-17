@@ -24,7 +24,7 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
 
-# log
+# logback
 logging:
   level:
     root: error
