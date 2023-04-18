@@ -40,6 +40,9 @@ public class User implements Serializable {
     //用户头像URL
     private String avatar;
 
+    //标志位
+    private Integer isEvaluate;
+
     private String createAt;
 
     private String updateAt;
