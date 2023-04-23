@@ -71,15 +71,18 @@ public class CollaborativeFilteringServiceImpl implements CollaborativeFiltering
     @Override
     public void updateValue(List<FilmEvaluate> list) {
         //1.对list进行for循环，将uid，fid，start存入 map[string]map[string]string
+        System.out.println(list);
         Map<String, Map<String,Integer>> userFilmSatrt = new HashMap();
         Map<String,Integer> filmAndSatrt = new HashMap();
         for (FilmEvaluate item: list) {
             filmAndSatrt.put(item.getFid(),item.getStar());
             userFilmSatrt.put(item.getUid(),filmAndSatrt);
         }
+        System.out.println(userFilmSatrt);
 
         //2.将map序列化为json string，存入表CollaborativeFiltering（value String）
         String value = JSON.toJSONString(userFilmSatrt);
+        System.out.println(value);
         //entity
         CollaborativeFiltering collaborativeFiltering = new CollaborativeFiltering();
         collaborativeFiltering.setCname("cf");
@@ -89,7 +92,7 @@ public class CollaborativeFilteringServiceImpl implements CollaborativeFiltering
                 new QueryWrapper<CollaborativeFiltering>()
                         .eq("cname","cf")
                 );
-
+        System.out.println("CollaborativeFiltering更新...");
     }
 
     //返回film列表

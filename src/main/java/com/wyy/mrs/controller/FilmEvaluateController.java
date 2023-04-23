@@ -37,6 +37,7 @@ public class FilmEvaluateController {
         if (user.getIsEvaluate().equals(0)) {
             user.setIsEvaluate(1);
             userMapper.updateById(user);
+            System.out.println("设置用户标志位，代表评价过film");
         }
 
         //更新CollaborativeFiltering数据
