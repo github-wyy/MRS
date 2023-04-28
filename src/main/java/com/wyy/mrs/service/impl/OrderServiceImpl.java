@@ -110,10 +110,15 @@ public class OrderServiceImpl implements OrderService {
             OrderVO orderVO = new OrderVO();
             orderVO.setOrder(o);
             orderVO.setUser(userMapper.selectById(o.getUid()));
-            Arrangement arrangement = arrangementService.findById(o.getAid());
-            orderVO.setArrangement(arrangement);
-            orderVO.setFilm(filmMapper.selectById(arrangement.getFid()));
+            Arrangement arrangement = arrangementService.findById(o.getAid()); // 没查到arrangement，导致下面空指针
+            if (arrangement != null) {
+                orderVO.setArrangement(arrangement);
+                orderVO.setFilm(filmMapper.selectById(arrangement.getFid())); // 空指针 方法：数据库去掉第二个订单试一下，因为debug过程中，只有第二个订单空指针
+            }
+//            orderVO.setArrangement(arrangement);
+//            orderVO.setFilm(filmMapper.selectById(arrangement.getFid()));
             result.add(orderVO);
+            System.out.println(result);
         }
         return result;
     }
