@@ -18,9 +18,10 @@ public class CollaborativeFilteringController {
 
     @Resource
     CollaborativeFilteringService collaborativeFilteringService;
-    
+
     @GetMapping("/cf/{uid}")
     public List<Film> list(@PathVariable String uid) {
+        System.out.printf("1、获取到用户的id: %s\n",uid);
         List<Film> films = collaborativeFilteringService.findFilmBaseUserFiler(uid);
         return films;
     }

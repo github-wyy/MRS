@@ -4,6 +4,7 @@ import com.wyy.mrs.model.entity.Arrangement;
 import com.wyy.mrs.model.entity.Film;
 import com.wyy.mrs.model.vo.ArrangementVO;
 import com.wyy.mrs.service.ArrangementService;
+import com.wyy.mrs.service.CollaborativeFilteringService;
 import com.wyy.mrs.service.FilmService;
 import org.springframework.web.bind.annotation.*;
 
