@@ -18,8 +18,8 @@ public class CollaborativeFilteringController {
 
     @Resource
     CollaborativeFilteringService collaborativeFilteringService;
-
-    @GetMapping("/{uid}")
+    
+    @GetMapping("/cf/{uid}")
     public List<Film> list(@PathVariable String uid) {
         List<Film> films = collaborativeFilteringService.findFilmBaseUserFiler(uid);
         return films;
