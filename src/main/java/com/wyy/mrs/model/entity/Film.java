@@ -44,4 +44,7 @@ public class Film implements Serializable {
     //电影时长 单位：分钟
     private Integer duration;
 
+    //film均值
+    private Double avgrating;
+
 }

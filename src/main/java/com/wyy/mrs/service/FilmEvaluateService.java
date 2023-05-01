@@ -1,5 +1,6 @@
 package com.wyy.mrs.service;
 
+import com.wyy.mrs.model.entity.Film;
 import com.wyy.mrs.model.entity.FilmEvaluate;
 import com.wyy.mrs.model.vo.FilmEvaluateVO;
 
@@ -16,5 +17,9 @@ public interface FilmEvaluateService {
     void deleteById(String id);
 
     List<FilmEvaluate> findAllFilm();
+
+    void ModifyAverageFilmRating(String fid);
+
+    //void ModifyAllAverageFilmRating(List<Film> films, List<FilmEvaluate> evaluateList);
 
 }
