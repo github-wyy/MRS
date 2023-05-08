@@ -1,6 +1,7 @@
 package com.wyy.mrs.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.wyy.mrs.component.OrderSender;
 import com.wyy.mrs.constant.OrderStatus;
 import com.wyy.mrs.mapper.FilmMapper;
 import com.wyy.mrs.mapper.OrderMapper;
@@ -37,6 +38,9 @@ public class OrderServiceImpl implements OrderService {
     @Resource
     private FilmMapper filmMapper;
 
+    @Resource
+    private OrderSender orderSender;
+
     @Override
     public Order create(Cart cart) throws Exception {
         List<Integer> seats = arrangementService.getSeatsHaveSelected(cart.getAid());
@@ -46,7 +50,8 @@ public class OrderServiceImpl implements OrderService {
         }
         Order order = new Order();
         //生成订单id
-        order.setId(UUID.randomUUID().toString());
+        String orderUUID = UUID.randomUUID().toString();
+        order.setId(orderUUID);
         //写入用户id
         order.setUid(cart.getUid());
         //写入用户电话
@@ -65,6 +70,11 @@ public class OrderServiceImpl implements OrderService {
         Film film = filmMapper.selectById(arrangementService.findById(cart.getAid()).getFid());
         film.setHot(film.getHot() + split.length);
         filmMapper.updateById(film);
+
+        //发送消息，30分钟后没支付，删除订单
+        long delayTimes = 30 * 60 * 1000;
+        orderSender.sendMessage(orderUUID, delayTimes);
+
         return order;
     }
 

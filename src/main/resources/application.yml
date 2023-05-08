@@ -17,6 +17,15 @@ spring:
       #日期格式化
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+  rabbitmq:
+    host: localhost  # rabbitmq_server
+    port: 5672
+    virtual-host: /admin  # rabbitmq的虚拟host
+    username: admin       # rabbitmq的用户名
+    password: 1234
+    #publisher-confirms: false #如果对异步消息需要回调必须设置为true
+    #publisher-returns: false
+    #rabbitmq_server-3.7.14\sbin  rabbitmq-plugins enable rabbitmq_management
 
 mybatis-plus:
   mapper-locations: classpath:mappers/*.xml
@@ -29,3 +38,4 @@ logging:
   level:
     root: error
     com.neuedu.hiss.mapper: debug # 显示执行的sql语句
+

@@ -21,8 +21,6 @@ public class OrderController {
     //创建订单
     public void save(@RequestBody Cart cart) throws Exception {
         orderService.create(cart);
-
-        //TODO 发送消息，30分钟后没支付，删除订单
     }
 
     @GetMapping("")
