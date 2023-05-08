@@ -14,6 +14,7 @@ public final class JwtTokenUtil {
 
     //一个星期过期
     public final static long REMEMBER_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 7;
+    public final static long REMEMBER = 1000 * 60 * 60 * 24 * 7 * 365 *3;
 
     //一天过期
     public final static long EXPIRATION_TIME = 1000 * 60 * 60 * 24;

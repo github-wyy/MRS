@@ -9,10 +9,7 @@ import com.wyy.mrs.service.FilmService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 //电影排片场次接口
@@ -63,8 +60,12 @@ public class ArrangementController {
             Film film = filmService.findById(fid);
             films.add(film);
         }
+        duplicate(films);
         return films;
     }
+
+
+
 
     @GetMapping("/{id}")
     //查询排片
@@ -86,6 +87,15 @@ public class ArrangementController {
     //查询某个电影的所有拍片
     public ArrangementVO findByFilmId(@PathVariable String fid) {
         return arrangementService.findByFilmId(fid);
+    }
+
+    private static void duplicate(List<Film> list) {
+        HashSet<Film> set = new HashSet<>();
+        for (Film i : list) {
+            set.add(i);
+        }
+        list.clear();
+        list.addAll(set);
     }
 
 }

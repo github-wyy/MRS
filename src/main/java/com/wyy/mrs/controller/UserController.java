@@ -30,9 +30,10 @@ public class UserController {
         Map<String, Object> map = new HashMap<>();
         //是否选择记住我
         long exp = dto.isRemember() ? JwtTokenUtil.REMEMBER_EXPIRATION_TIME : JwtTokenUtil.EXPIRATION_TIME;
+        long expTest = JwtTokenUtil.REMEMBER;
         List<String> roles = new ArrayList<>();
         roles.add(Roles.ROLE_USER);
-        map.put("token", JwtTokenUtil.createToken(dto.getUsername(), roles, exp));
+        map.put("token", JwtTokenUtil.createToken(dto.getUsername(), roles, expTest));
         map.put("user", user);
         return map;
     }

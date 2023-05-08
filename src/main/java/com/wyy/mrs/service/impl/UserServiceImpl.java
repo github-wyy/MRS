@@ -59,6 +59,7 @@ public class UserServiceImpl implements UserService {
         user.setCreateAt(now);
         user.setUpdateAt(now);
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        user.setAvatar("https://tse2-mm.cn.bing.net/th/id/OIP-C.YvlSxd61mVhdY9T8MYpjFgHaHa?w=183&h=183&c=7&r=0&o=5&dpr=1.3&pid=1.7");
         userMapper.insert(user);
         return user;
     }

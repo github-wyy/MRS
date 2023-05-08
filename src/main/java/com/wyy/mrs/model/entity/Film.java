@@ -47,4 +47,7 @@ public class Film implements Serializable {
     //film均值
     private Double avgrating;
 
+    //视频地址
+    private String video;
+
 }

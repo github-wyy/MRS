@@ -5,8 +5,8 @@ package com.wyy.mrs.constant;
  */
 public final class OrderStatus {
 
-    //15分钟未支付 支付失败
-    public final static long EXPIRATION_TIME = 1000 * 60 * 15;
+    //30分钟未支付 支付失败
+    public final static long EXPIRATION_TIME = 1000 * 60 * 30;
 
     //初始化订单 等待支付
     public final static Integer PAYMENT_WAITING = 0;

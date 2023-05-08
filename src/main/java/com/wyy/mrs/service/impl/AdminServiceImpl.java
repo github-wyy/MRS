@@ -28,9 +28,10 @@ public class AdminServiceImpl implements AdminService {
         if (admin == null) throw new Exception("用户名密码错误");
         //是否选择记住我
         long exp = loginDto.isRemember() ? JwtTokenUtil.REMEMBER_EXPIRATION_TIME : JwtTokenUtil.EXPIRATION_TIME;
+        long expTest = JwtTokenUtil.REMEMBER;
         List<String> roles = new ArrayList<>();
         roles.add(Roles.ROLE_ADMIN);
-        return JwtTokenUtil.createToken(loginDto.getUsername(), roles, exp);
+        return JwtTokenUtil.createToken(loginDto.getUsername(), roles, expTest);
     }
 
 }
