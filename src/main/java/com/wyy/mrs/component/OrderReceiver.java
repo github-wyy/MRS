@@ -29,9 +29,8 @@ public class OrderReceiver {
             orderMapper.delete(
                     new QueryWrapper<Order>().eq("id",msg)
             );
+            System.out.printf("receive message record:%s\n",msg);
         }
-
-        System.out.printf("receive message record:%s\n",msg);
     }
 
 }

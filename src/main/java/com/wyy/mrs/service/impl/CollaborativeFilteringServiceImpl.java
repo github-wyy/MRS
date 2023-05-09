@@ -68,7 +68,8 @@ public class CollaborativeFilteringServiceImpl implements CollaborativeFiltering
 //        }
         //5、对预测评分排序，推荐,返回电影列表
         System.out.printf("4、开始执行recommendMovies方法\n");
-        List<String> list = recommendMovies(map,uid);
+        //List<String> list = recommendMovies(map,uid);
+        List<String> list = recommendFilms(map,uid);
         //List<String> list = recommendMovies(map,uid,avgRatingMap);
 
         System.out.printf("推荐的电影集合:");
@@ -117,58 +118,87 @@ public class CollaborativeFilteringServiceImpl implements CollaborativeFiltering
         System.out.println("CollaborativeFiltering更新...");
     }
 
-    //使用修正的余弦相似度
-    public List<String> recommendMovies(Map<String, Map<String, Integer>> userRatings, String uid) {
-        Map<String, Double> similarityMap = new HashMap<>();
-        Map<String, Integer> targetUserRatings = userRatings.get(uid);
+    public List<String> recommendFilms(Map<String, Map<String, Integer>> userRatings, String uid) {
+        // 首先，找到目标用户的评分向量
+        Map<String, Integer> targetRatings = userRatings.get(uid);
+        Set<String> targetMovies = targetRatings.keySet();
+
+        // 计算用户之间的余弦相似度
+        Map<String, Double> similarityScores = new HashMap<>();
         for (String user : userRatings.keySet()) {
             if (!user.equals(uid)) {
-                Map<String, Integer> otherUserRatings = userRatings.get(user);
+                Map<String, Integer> neighborRatings = userRatings.get(user);
+                Set<String> neighborMovies = neighborRatings.keySet();
+
+                // 计算目标评分和邻居评分的点积
                 double dotProduct = 0.0;
-                double normA = 0.0;
-                double normB = 0.0;
-                for (String movie : targetUserRatings.keySet()) {
-                    if (otherUserRatings.containsKey(movie)) {
-                        dotProduct += targetUserRatings.get(movie) * otherUserRatings.get(movie);
-                    }
-                    normA += Math.pow(targetUserRatings.get(movie), 2);
-                }
-                for (String movie : otherUserRatings.keySet()) {
-                    normB += Math.pow(otherUserRatings.get(movie), 2);
-                }
-                double similarity = dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-                similarityMap.put(user, similarity);
-            }
-        }
-        List<String> recommendedMovies = new ArrayList<>();
-        List<Map.Entry<String, Double>> sortedSimilarity = similarityMap.entrySet().stream()
-                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
-                .collect(Collectors.toList());
-        for (String movie : userRatings.get(uid).keySet()) {
-            for (Map.Entry<String, Double> entry : sortedSimilarity) {
-                if (userRatings.get(entry.getKey()).containsKey(movie)) {
-                    sortedSimilarity.remove(entry);
-                    break;
-                }
-            }
-        }
-        for (Map.Entry<String, Double> entry : sortedSimilarity) {
-            if (recommendedMovies.size() >= 10) {
-                break;
-            }
-            for (String movie : userRatings.get(entry.getKey()).keySet()) {
-                if (!targetUserRatings.containsKey(movie) && !recommendedMovies.contains(movie)) {
-                    recommendedMovies.add(movie);
-                    if (recommendedMovies.size() >= 10) {
-                        break;
+                for (String movie : targetMovies) {
+                    if (neighborMovies.contains(movie)) {
+                        int targetRating = targetRatings.get(movie);
+                        int neighborRating = neighborRatings.get(movie);
+                        dotProduct += targetRating * neighborRating;
                     }
                 }
+
+                // 计算目标和邻居的相似度
+                double targetMagnitude = 0.0;
+                double neighborMagnitude = 0.0;
+                for (String movie : targetMovies) {
+                    targetMagnitude += targetRatings.get(movie) * targetRatings.get(movie);
+                }
+                for (String movie : neighborMovies) {
+                    neighborMagnitude += neighborRatings.get(movie) * neighborRatings.get(movie);
+                }
+                targetMagnitude = Math.sqrt(targetMagnitude);
+                neighborMagnitude = Math.sqrt(neighborMagnitude);
+
+                // Calculate cosine similarity between target user and neighbor user
+                double cosineSimilarity = dotProduct / (targetMagnitude * neighborMagnitude);
+                similarityScores.put(user, cosineSimilarity);
             }
         }
+
+        // 按照相似度递减的方式对邻居进行排序
+        List<String> neighbors = new ArrayList<>(similarityScores.keySet());
+        Collections.sort(neighbors, (a, b) -> similarityScores.get(b).compareTo(similarityScores.get(a)));
+        neighbors = neighbors.subList(0, Math.min(15, neighbors.size())); // 选择前15个邻居
+
+        // 计算所有未看过电影的加权评分
+        Map<String, Double> weightedRatings = new HashMap<>();
+        Map<String, Double> similaritySums = new HashMap<>();
+        for (String neighbor : neighbors) {
+            Map<String, Integer> neighborRatings = userRatings.get(neighbor);
+            Set<String> neighborMovies = neighborRatings.keySet();
+            double neighborSimilarity = similarityScores.get(neighbor);
+            for (String movie : neighborMovies) {
+                if (!targetMovies.contains(movie)) {
+                    double neighborRating = neighborRatings.get(movie);
+                    double weightedRating = neighborSimilarity * (neighborRating - getMeanRating(neighborRatings));
+                    weightedRatings.put(movie, weightedRatings.getOrDefault(movie, 0.0) + weightedRating);
+                    similaritySums.put(movie, similaritySums.getOrDefault(movie, 0.0) + neighborSimilarity);
+                }
+            }
+        }
+
+        // 查找加权评分最高的前10部电影
+        List<String> recommendedMovies = new ArrayList<>(weightedRatings.keySet());
+        recommendedMovies.removeIf(movie -> targetMovies.contains(movie)); // Remove movies that target user has seen
+        Collections.sort(recommendedMovies, (a, b) -> weightedRatings.get(b).compareTo(weightedRatings.get(a)));
+        recommendedMovies = recommendedMovies.subList(0, Math.min(10, recommendedMovies.size())); // Select top 10 movies
+
         return recommendedMovies;
     }
 
-    //返回film列表
+    // 计算平均评分
+    private double getMeanRating(Map<String, Integer> ratings) {
+        double sum = 0.0;
+        for (int rating : ratings.values()) {
+            sum += rating;
+        }
+        return sum / (double) ratings.size();
+    }
+
+    // 返回film列表
     public List<Film> getMovies(List<String> list) {
         List<Film> films = new ArrayList<>();
         for (String item: list) {
@@ -181,123 +211,4 @@ public class CollaborativeFilteringServiceImpl implements CollaborativeFiltering
         return films;
     }
 
-/*    //使用余弦相似度
-    public List<String> recommendMovies(Map<String, Map<String, Integer>> userRatings, String uid) {
-        Map<String, Integer> currentUserRatings = userRatings.get(uid);
-        Map<String, Double> similarityScores = new HashMap<>();
-        for (String user : userRatings.keySet()) {
-            if (!user.equals(uid)) {
-                Map<String, Integer> otherUserRatings = userRatings.get(user);
-                double dotProduct = 0.0;
-                double magnitudeCurrentUser = 0.0;
-                double magnitudeOtherUser = 0.0;
-                for (String movie : currentUserRatings.keySet()) {
-                    if (otherUserRatings.containsKey(movie)) {
-                        dotProduct += currentUserRatings.get(movie) * otherUserRatings.get(movie);
-                    }
-                    magnitudeCurrentUser += Math.pow(currentUserRatings.get(movie), 2);
-                }
-                for (String movie : otherUserRatings.keySet()) {
-                    magnitudeOtherUser += Math.pow(otherUserRatings.get(movie), 2);
-                }
-                double magnitudeProduct = Math.sqrt(magnitudeCurrentUser) * Math.sqrt(magnitudeOtherUser);
-                if (magnitudeProduct != 0) {
-                    double cosineSimilarity = dotProduct / magnitudeProduct;
-                    similarityScores.put(user, cosineSimilarity);
-                }
-            }
-        }
-        List<String> recommendedMovies = new ArrayList<>();
-        Set<String> moviesAlreadyWatched = currentUserRatings.keySet();
-        Map<String, Double> sortedSimilarityScores = similarityScores.entrySet().stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-        for (String similarUser : sortedSimilarityScores.keySet()) {
-            Map<String, Integer> similarUserRatings = userRatings.get(similarUser);
-            for (String movie : similarUserRatings.keySet()) {
-                if (!moviesAlreadyWatched.contains(movie)) {
-                    recommendedMovies.add(movie);
-                    if (recommendedMovies.size() == 10) {
-                        return recommendedMovies;
-                    }
-                }
-            }
-        }
-        return recommendedMovies;
-    }*/
-
-/*
-    // 使用修正的余弦相似度，一直推荐不出来
-    // 首先，需要根据用户的评分计算用户之间的相似性。使用修正的余弦相似性，
-    // 将创建一个嵌套循环来迭代每对用户，并计算他们的相似性。将相似性得分存储
-    // 在名为userSimilarities的Map<String，Map<String，Double >中
-    public Map<String, Map<String, Double>> getUserSimilarities(Map<String, Map<String, Integer>> userRatingss, Map<String,Double> avgRatingMap) {
-        Map<String, Map<String, Double>> userSimilarities = new HashMap<>();
-        for (String user1 : userRatingss.keySet()) {
-            for (String user2 : userRatingss.keySet()) {
-                if (!user1.equals(user2)) {
-                    Map<String, Integer> ratings1 = userRatingss.get(user1);
-                    Map<String, Integer> ratings2 = userRatingss.get(user2);
-                    double dotProduct = 0.0;
-                    double norm1 = 0.0;
-                    double norm2 = 0.0;
-                    for (String movie : ratings1.keySet()) {
-                        //Double avgRating = this.filmMapper.selectOne(new QueryWrapper<Film>().eq("id", movie)).getAvgrating();
-                        if (ratings2.containsKey(movie)) {
-                            dotProduct += (ratings1.get(movie) - avgRatingMap.get(movie))
-                                    * (ratings2.get(movie) - avgRatingMap.get(movie));
-                        }
-                        norm1 += Math.pow(ratings1.get(movie) - avgRatingMap.get(movie), 2);
-                    }
-                    for (String movie : ratings2.keySet()) {
-                        norm2 += Math.pow(ratings2.get(movie) - avgRatingMap.get(movie), 2);
-                    }
-                    double similarity = dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
-                    if (similarity > 0.0) {
-                        if (!userSimilarities.containsKey(user1)) {
-                            HashMap<String, Double> userAndSimilarities = new HashMap<>();
-                            userAndSimilarities.put(user2,similarity);
-                            userSimilarities.put(user1,userAndSimilarities);
-                        }
-                        userSimilarities.get(user1).put(user2, similarity);
-                    }
-                }
-            }
-        }
-        System.out.println("用户相似性");
-        System.out.println(userSimilarities);
-        return userSimilarities;
-    }
-
-    // 现在有了用户相似性，可以使用它们向给定用户推荐电影。创建一个名为“推荐的电影”的方法，
-    // 该方法接受用户的评分和用户相似性，并返回推荐的电影列表。迭代用户未评分的所有电影，并计算相似
-    // 用户评分的加权平均值。在名为“film”的Map<String，Double >中存储加权平均分数。然后，将
-    // 按分数对电影进行排序，并返回前10部电影
-    public List<String> recommendMovies(Map<String, Map<String, Integer>> userRatingss, String uid, Map<String,Double> avgRatingMap) {
-        //Map<String, Integer> userRatings
-        //Map<String, Map<String, Integer>> userRatingss
-        Map<String, Integer> userRatings = userRatingss.get(uid);
-        Map<String, Map<String, Double>> userSimilarities = getUserSimilarities(userRatingss, avgRatingMap);
-        Map<String, Double> movieScores = new HashMap<>();
-        for (String movie : userRatings.keySet()) {
-            if (userRatings.get(movie) == 0) {
-                double weightedSum = 0.0;
-                double similaritySum = 0.0;
-                for (String user : userSimilarities.keySet()) {
-                    if (userRatings.containsKey(movie) && userRatings.get(movie) > 0) {
-                        double similarity = userSimilarities.get(user).getOrDefault(userRatings, 0.0);
-                        weightedSum += similarity * avgRatingMap.get(movie);
-                        similaritySum += similarity;
-                    }
-                }
-                if (similaritySum > 0) {
-                    movieScores.put(movie, weightedSum / similaritySum + avgRatingMap.get(movie));
-                }
-            }
-        }
-        List<String> recommendedMovies = new ArrayList<>(movieScores.keySet());
-        recommendedMovies.sort((m1, m2) -> Double.compare(movieScores.get(m2), movieScores.get(m1)));
-        System.out.println(recommendedMovies);
-        return recommendedMovies.subList(0, Math.min(10, recommendedMovies.size()));
-    }*/
 }
