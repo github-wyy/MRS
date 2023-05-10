@@ -17,6 +17,9 @@ public interface FilmService {
     //获取热门电影
     List<Film> findHots(Integer limit);
 
+    //获取乱序热门电影
+    List<Film> findRListHots(Integer limit);
+
     //根据电影名模糊查询
     List<Film> findLikeName(String name);
 

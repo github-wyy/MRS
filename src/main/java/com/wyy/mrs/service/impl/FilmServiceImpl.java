@@ -56,6 +56,13 @@ public class FilmServiceImpl implements FilmService {
         return filmMapper.selectList(wrapper);
     }
 
+    @Override
+    public List<Film> findRListHots(Integer limit) {
+        QueryWrapper<Film> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc("hot").last("limit " + limit).orderByDesc("avgrating");
+        return filmMapper.selectList(wrapper);
+    }
+
     @Cacheable
     @Override
     public List<Film> findLikeName(String name) {

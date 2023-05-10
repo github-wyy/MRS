@@ -2,6 +2,7 @@ package com.wyy.mrs.controller;
 
 import com.wyy.mrs.model.entity.Cart;
 import com.wyy.mrs.model.entity.Order;
+import com.wyy.mrs.model.vo.OrderStatusVO;
 import com.wyy.mrs.model.vo.OrderVO;
 import com.wyy.mrs.service.OrderService;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +31,15 @@ public class OrderController {
     }
 
     @PutMapping("")
-    //查询所有订单
+    //更新订单
     public void update(@RequestBody Order order) {
         orderService.update(order);
+    }
+
+    @GetMapping("/status")
+    //订单状态统计
+    public List<OrderStatusVO> orderStatus() {
+        return orderService.orderStatus();
     }
 
     @GetMapping("/user/{id}")

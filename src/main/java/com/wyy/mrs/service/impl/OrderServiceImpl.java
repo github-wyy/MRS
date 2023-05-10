@@ -10,6 +10,7 @@ import com.wyy.mrs.model.entity.Arrangement;
 import com.wyy.mrs.model.entity.Cart;
 import com.wyy.mrs.model.entity.Film;
 import com.wyy.mrs.model.entity.Order;
+import com.wyy.mrs.model.vo.OrderStatusVO;
 import com.wyy.mrs.model.vo.OrderVO;
 import com.wyy.mrs.service.ArrangementService;
 import com.wyy.mrs.service.OrderService;
@@ -111,6 +112,68 @@ public class OrderServiceImpl implements OrderService {
         QueryWrapper<Order> wrapper = new QueryWrapper<>();
         wrapper.in("uid", uid);
         return findByWrapper(wrapper);
+    }
+
+    @Override
+    public List<OrderStatusVO> orderStatus() {
+
+        List<OrderStatusVO> orderStatusVOS = new ArrayList<>();
+
+        //等待支付 0
+        OrderStatusVO waiting = new OrderStatusVO();
+        waiting.setOrderStatusString(OrderStatus.PAYMENT_WAITING_STRING);
+        //支付失败 1
+        OrderStatusVO paymentFailed = new OrderStatusVO();
+        paymentFailed.setOrderStatusString(OrderStatus.PAYMENT_FAILED_STRING);
+        //支付成功 2
+        OrderStatusVO paymentSuccessful = new OrderStatusVO();
+        paymentSuccessful.setOrderStatusString(OrderStatus.PAYMENT_SUCCESSFUL_STRING);
+        //已被撤销 3
+        OrderStatusVO countermand = new OrderStatusVO();
+        countermand.setOrderStatusString(OrderStatus.COUNTERMAND_STRING);
+
+
+        //查询所有订单
+        List<Order> orders = orderMapper.selectList(
+                new QueryWrapper<>()
+        );
+
+        int waitingNum = 0;
+        int paymentFailedNum = 0;
+        int paymentSuccessfulNum = 0;
+        int countermandNum = 0;
+        //迭代
+        for (Order item: orders) {
+            if (item.getStatus().equals(0)) {
+                waitingNum += 1;
+            }
+            if (item.getStatus().equals(1)) {
+                paymentFailedNum += 1;
+            }
+            if (item.getStatus().equals(2)) {
+                paymentSuccessfulNum += 1;
+            }
+            if (item.getStatus().equals(3)) {
+                countermandNum += 1;
+            }
+
+        }
+
+        //设置数量
+        waiting.setNum(waitingNum);
+        paymentFailed.setNum(paymentFailedNum);
+        paymentSuccessful.setNum(paymentSuccessfulNum);
+        countermand.setNum(countermandNum);
+
+        //加入List
+        orderStatusVOS.add(waiting);
+        orderStatusVOS.add(paymentFailed);
+        orderStatusVOS.add(paymentSuccessful);
+        orderStatusVOS.add(countermand);
+
+        System.out.println(111);
+        System.out.println(orderStatusVOS);
+        return orderStatusVOS;
     }
 
     private List<OrderVO> findByWrapper(QueryWrapper<Order> wrapper) {

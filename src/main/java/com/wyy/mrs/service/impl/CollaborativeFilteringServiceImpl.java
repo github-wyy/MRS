@@ -152,7 +152,6 @@ public class CollaborativeFilteringServiceImpl implements CollaborativeFiltering
                 targetMagnitude = Math.sqrt(targetMagnitude);
                 neighborMagnitude = Math.sqrt(neighborMagnitude);
 
-                // Calculate cosine similarity between target user and neighbor user
                 double cosineSimilarity = dotProduct / (targetMagnitude * neighborMagnitude);
                 similarityScores.put(user, cosineSimilarity);
             }
@@ -182,9 +181,9 @@ public class CollaborativeFilteringServiceImpl implements CollaborativeFiltering
 
         // 查找加权评分最高的前10部电影
         List<String> recommendedMovies = new ArrayList<>(weightedRatings.keySet());
-        recommendedMovies.removeIf(movie -> targetMovies.contains(movie)); // Remove movies that target user has seen
+        recommendedMovies.removeIf(movie -> targetMovies.contains(movie)); // 删除目标用户看过的电影
         Collections.sort(recommendedMovies, (a, b) -> weightedRatings.get(b).compareTo(weightedRatings.get(a)));
-        recommendedMovies = recommendedMovies.subList(0, Math.min(10, recommendedMovies.size())); // Select top 10 movies
+        recommendedMovies = recommendedMovies.subList(0, Math.min(10, recommendedMovies.size())); // 选择前十电影
 
         return recommendedMovies;
     }

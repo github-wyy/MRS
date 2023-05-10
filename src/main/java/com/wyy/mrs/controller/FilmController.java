@@ -36,6 +36,12 @@ public class FilmController {
         return filmService.findHots(limit);
     }
 
+    @GetMapping("/rhot")
+    //获取热榜电影
+    public List<Film> rListHots() {
+        return filmService.findRListHots(10);
+    }
+
     @GetMapping("/name/{name}")
     //搜索电影
     public List<Film> search(@PathVariable String name) {
