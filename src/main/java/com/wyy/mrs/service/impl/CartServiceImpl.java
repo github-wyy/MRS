@@ -37,6 +37,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void save(Cart cart) throws Exception {
+        //评分
         cartMapper.insert(cart);
     }
 

@@ -16,6 +16,8 @@ public class Poster implements Serializable {
 
     private String title;
 
+    private String fid;
+
     private String url;
 
     //上架 下架

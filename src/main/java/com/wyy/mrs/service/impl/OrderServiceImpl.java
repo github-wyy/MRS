@@ -81,6 +81,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order pay(String id) throws Exception {
+        //评分
         Order order = orderMapper.selectById(id);
         if (order == null) throw new Exception("不存在的订单id");
 

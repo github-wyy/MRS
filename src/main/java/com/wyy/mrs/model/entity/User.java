@@ -40,7 +40,7 @@ public class User implements Serializable {
     //用户头像URL
     private String avatar;
 
-    //标志位
+    //标志位，表示用户主观评价过电影
     private Integer isEvaluate;
 
     private String createAt;

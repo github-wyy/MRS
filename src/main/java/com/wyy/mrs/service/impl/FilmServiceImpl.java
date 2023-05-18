@@ -3,6 +3,7 @@ package com.wyy.mrs.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.wyy.mrs.mapper.FilmMapper;
 import com.wyy.mrs.model.entity.Film;
+import com.wyy.mrs.service.FilmEvaluateService;
 import com.wyy.mrs.service.FilmService;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -18,6 +19,9 @@ public class FilmServiceImpl implements FilmService {
 
     @Resource
     private FilmMapper filmMapper;
+
+    @Resource
+    private FilmEvaluateService filmEvaluateService;
 
     @Override
     public void save(Film film) {
@@ -74,6 +78,7 @@ public class FilmServiceImpl implements FilmService {
     @Cacheable
     @Override
     public Film findById(String id) {
+        //评分
         return filmMapper.selectById(id);
     }
 
